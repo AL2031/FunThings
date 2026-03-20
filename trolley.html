@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Trolley Problem but Worse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Fraunces:opsz,ital,wght@9..144,1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F5F0E8; --paper: #FDFAF5; --ink: #1C1410;
+  --muted: #7A6A5A; --red: #CC2200; --orange: #E87A00;
+  --track: #8B7355; --radius: 20px;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--ink); font-family: 'Bricolage Grotesque', sans-serif; min-height: 100vh; }
+
+.back-nav { padding: 1.25rem 2rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #DDD5C8; background: var(--paper); }
+.back-link { display: inline-flex; align-items: center; gap: .4rem; font-size: .85rem; font-weight: 700; color: var(--muted); text-decoration: none; transition: color .2s; }
+.back-link:hover { color: var(--ink); }
+.nav-title { font-size: .85rem; font-weight: 700; color: var(--ink); }
+
+/* PROGRESS */
+.progress-wrap { max-width: 700px; margin: 2rem auto 0; padding: 0 1.5rem; }
+.progress-meta { display: flex; justify-content: space-between; margin-bottom: .5rem; font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+.progress-track { height: 5px; background: #DDD5C8; border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--red); border-radius: 99px; transition: width .4s ease; }
+
+/* SCENE */
+.scene {
+  max-width: 700px; margin: 1.5rem auto;
+  padding: 0 1.5rem 4rem;
+  display: flex; flex-direction: column; gap: 1.5rem;
+  animation: scene-in .4s ease backwards;
+}
+@keyframes scene-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+.dilemma-number { font-size: .72rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); }
+
+.dilemma-card {
+  background: var(--paper);
+  border: 2.5px solid var(--ink);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.dilemma-title {
+  font-size: clamp(1.5rem, 5vw, 2.25rem);
+  font-weight: 800; letter-spacing: -.04em;
+  line-height: 1.1; margin-bottom: 1.25rem;
+}
+
+.dilemma-title em { font-family: 'Fraunces', serif; font-style: italic; font-weight: 400; color: var(--red); }
+
+.dilemma-text { font-size: .95rem; color: var(--muted); line-height: 1.8; }
+.dilemma-text strong { color: var(--ink); font-weight: 700; }
+
+/* CHOICES */
+.choices { display: flex; flex-direction: column; gap: .85rem; }
+
+.choice-btn {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: .95rem; font-weight: 700;
+  background: var(--paper);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background .15s, transform .1s, box-shadow .15s;
+  line-height: 1.4;
+  box-shadow: 3px 3px 0 var(--ink);
+  display: flex; align-items: flex-start; gap: .85rem;
+}
+
+.choice-btn:hover { background: var(--ink); color: var(--paper); transform: translate(-2px, -2px); box-shadow: 5px 5px 0 #6A5030; }
+.choice-btn .choice-letter { font-size: 1.1rem; font-weight: 800; flex-shrink: 0; margin-top: .05rem; }
+
+/* RESULT */
+.result-card {
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 24px;
+  padding: 2rem;
+  display: none;
+  animation: scene-in .35s ease;
+}
+
+.result-card.visible { display: block; }
+.result-header { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
+.result-emoji { font-size: 2rem; }
+.result-verdict { font-size: 1.1rem; font-weight: 800; letter-spacing: -.02em; }
+.result-text { font-size: .9rem; color: #B0A890; line-height: 1.7; margin-bottom: 1.25rem; }
+.next-btn { font-family: 'Bricolage Grotesque', sans-serif; font-size: .95rem; font-weight: 800; background: var(--paper); color: var(--ink); border: none; border-radius: 12px; padding: .75rem 1.75rem; cursor: pointer; transition: background .15s, transform .1s; letter-spacing: -.01em; }
+.next-btn:hover { background: #FFD700; transform: translateY(-1px); }
+
+/* END SCREEN */
+#end-screen { display: none; max-width: 700px; margin: 2rem auto; padding: 0 1.5rem 5rem; }
+#end-screen.visible { display: block; animation: scene-in .4s ease; }
+.end-card { background: var(--paper); border: 2.5px solid var(--ink); border-radius: 28px; padding: 2.5rem; box-shadow: 6px 6px 0 var(--ink); text-align: center; }
+.end-title { font-size: clamp(2rem, 7vw, 3.5rem); font-weight: 800; letter-spacing: -.04em; margin-bottom: .75rem; line-height: 1; }
+.end-title em { font-family: 'Fraunces', serif; font-style: italic; color: var(--red); }
+.end-subtitle { font-size: 1rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
+.score-row { display: flex; justify-content: center; gap: 2.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.score-item { text-align: center; }
+.score-num { font-size: 2.5rem; font-weight: 800; letter-spacing: -.04em; }
+.score-label { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+.personality { background: #F0EAE0; border-radius: 16px; padding: 1.25rem; margin-bottom: 2rem; }
+.personality-label { font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: .4rem; }
+.personality-type { font-size: 1.4rem; font-weight: 800; letter-spacing: -.03em; color: var(--red); }
+.personality-desc { font-size: .85rem; color: var(--muted); line-height: 1.55; margin-top: .35rem; }
+.replay-btn { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1rem; font-weight: 800; background: var(--ink); color: var(--paper); border: none; border-radius: 14px; padding: .85rem 2.25rem; cursor: pointer; transition: background .15s, transform .15s; box-shadow: 0 4px 0 #6A5030; }
+.replay-btn:hover { background: var(--red); transform: translateY(-2px); }
+
+footer { text-align: center; padding: 2rem; font-size: .8rem; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<nav class="back-nav">
+  <a href="index.html" class="back-link">&#8592; Back</a>
+  <span style="color:#C8C0B0;font-size:.8rem">|</span>
+  <span class="nav-title">The Trolley Problem but Worse</span>
+</nav>
+
+<div id="game-wrap">
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span id="progress-label">Dilemma 1 of 8</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="scene" id="scene">
+    <div class="dilemma-number" id="dilemma-number">Dilemma 1</div>
+    <div class="dilemma-card">
+      <div class="dilemma-title" id="dilemma-title"></div>
+      <div class="dilemma-text" id="dilemma-text"></div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="result-card" id="result-card">
+      <div class="result-header">
+        <span class="result-emoji" id="result-emoji"></span>
+        <span class="result-verdict" id="result-verdict"></span>
+      </div>
+      <div class="result-text" id="result-text"></div>
+      <button class="next-btn" onclick="nextDilemma()">Next Dilemma &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<div id="end-screen">
+  <div class="end-card">
+    <div class="end-title">Philosophy <em>Complete</em></div>
+    <div class="end-subtitle">You have answered all 8 dilemmas. Here is what that says about you.</div>
+    <div class="score-row">
+      <div class="score-item"><div class="score-num" id="utilitarian-score">0</div><div class="score-label">Utilitarian</div></div>
+      <div class="score-item"><div class="score-num" id="chaotic-score">0</div><div class="score-label">Chaotic</div></div>
+      <div class="score-item"><div class="score-num" id="neutral-score">0</div><div class="score-label">Neutral</div></div>
+    </div>
+    <div class="personality">
+      <div class="personality-label">Your Moral Alignment</div>
+      <div class="personality-type" id="personality-type">Loading...</div>
+      <div class="personality-desc" id="personality-desc"></div>
+    </div>
+    <button class="replay-btn" onclick="resetGame()">Try Again &#8594;</button>
+  </div>
+</div>
+
+<footer>*No actual trolleys were involved in the making of this quiz &middot; The Trolley Problem but Worse</footer>
+
+<script>
+(function() {
+  var current = 0;
+  var scores = { utilitarian: 0, chaotic: 0, neutral: 0 };
+  var answered = false;
+
+  var DILEMMAS = [
+    {
+      title: 'The Classic',
+      titleEm: false,
+      text: 'A runaway trolley is heading toward <strong>5 people</strong> tied to the tracks. You can pull a lever to divert it to another track, where only <strong>1 person</strong> is tied. You do not know any of them. You are wearing a very nice shirt.',
+      choices: [
+        { text: 'Pull the lever. Save 5, sacrifice 1.', type: 'utilitarian', verdict: 'Cold but logical.', commentary: 'You pulled the lever. The utilitarian calculus was clear: 5 > 1. Ethicists call this "the right answer." Your shirt survived.', emoji: '\uD83D\uDD27' },
+        { text: 'Do nothing. You did not tie them there.', type: 'neutral', verdict: 'Not your problem?', commentary: 'You watched. Some would argue inaction is still a choice. The trolley disagrees. Your shirt is fine though.', emoji: '\uD83E\uDD37' },
+      ]
+    },
+    {
+      title: 'The Upgrade',
+      text: 'Same trolley. But now the 5 people are <strong>reality TV producers</strong> and the 1 person is <strong>a librarian</strong> named Geoff who has never wronged anyone.',
+      choices: [
+        { text: 'Pull the lever anyway. Numbers matter.', type: 'utilitarian', verdict: 'Consistent.', commentary: 'You saved the TV producers. Geoff is gone. You will think about Geoff sometimes. You will not admit this.', emoji: '\uD83D\uDD27' },
+        { text: 'Save Geoff. Society needs librarians.', type: 'chaotic', verdict: 'Emotional reasoning detected.', commentary: 'You saved Geoff. He appreciated it. He found you a really good book recommendation afterward.', emoji: '\uD83D\uDCDA' },
+        { text: 'Let the trolley go where it goes.', type: 'neutral', verdict: 'Determined by chaos.', commentary: 'Neither Geoff nor the TV producers appreciated your lack of input.', emoji: '\uD83C\uDFB2' },
+      ]
+    },
+    {
+      title: 'The Footbridge',
+      text: 'A trolley hurtles toward 5 people. You are on a bridge above the tracks. Next to you is a <strong>very large stranger</strong>. If you push them off, their body will stop the trolley. You could also jump yourself, but you are not large enough to stop it. The stranger is eating a hot dog.',
+      choices: [
+        { text: 'Push the stranger.', type: 'utilitarian', verdict: 'Philosophically messy.', commentary: 'You pushed them. The trolley stopped. Hot dog: lost. This is the same math as the lever, but somehow feels different. That discomfort is called moral intuition.', emoji: '\uD83E\uDD71' },
+        { text: 'Do nothing. You are not a pusher of strangers.', type: 'neutral', verdict: 'Deontologically clean.', commentary: 'You let 5 people get hit. The stranger finished their hot dog. You told yourself it was the ethical choice. Many philosophers agree with you.', emoji: '\uD83C\uDF2D' },
+        { text: 'Ask the stranger if they would like to volunteer.', type: 'chaotic', verdict: 'Unexpectedly democratic.', commentary: 'They said no. You asked twice. The trolley did not wait. Nobody was pleased.', emoji: '\uD83D\uDDE3\uFE0F' },
+      ]
+    },
+    {
+      title: 'The Surgeon',
+      text: 'You are a doctor. A healthy patient comes in for a checkup. You have <strong>5 patients</strong> in the hospital who will die today without organ transplants. Your healthy patient is a perfect match for all 5. You have a scalpel. No one is watching. The patient brought you biscuits.',
+      choices: [
+        { text: 'Do it. 5 lives for 1.', type: 'chaotic', verdict: 'You are not a utilitarian. You are a villain.', commentary: 'You harvested the organs. 5 people lived. You went to prison. This is why the trolley problem uses a trolley and not surgery.', emoji: '\uD83D\uDE31' },
+        { text: 'Obviously do not do that.', type: 'neutral', verdict: 'Correct. This one was a test.', commentary: 'You passed. You ate one of the biscuits. It was a good biscuit. Your medical license remains intact.', emoji: '\uD83C\uDF6A' },
+        { text: 'Ask the patient to voluntarily donate.', type: 'utilitarian', verdict: 'Creatively ethical.', commentary: 'They declined. You respected their choice. You ate all the biscuits alone. The 5 patients did not survive, which was not your fault.', emoji: '\uD83E\uDD14' },
+      ]
+    },
+    {
+      title: 'The Dessert Trolley',
+      text: 'A trolley full of <strong>extremely good desserts</strong> is heading toward a table of 5 people who are lactose intolerant. If you pull the lever, it goes to a table of 1 person who has been waiting for dessert their whole life. There is a time limit.',
+      choices: [
+        { text: 'Pull the lever. Give it to the 1 person.', type: 'utilitarian', verdict: 'Dessert justice served.', commentary: 'The lone dessert enjoyer was moved to tears. They described this as the best day of their life. You feel unreasonably good about this.', emoji: '\uD83C\uDF70' },
+        { text: 'Leave it. Nobody asked you.', type: 'neutral', verdict: 'The desserts were wasted.', commentary: 'The lactose intolerant table politely declined. The desserts went cold. No one won. A classic trolley outcome.', emoji: '\uD83D\uDE22' },
+        { text: 'Eat the desserts yourself while making the decision.', type: 'chaotic', verdict: 'Bold. Chaotic. Relatable.', commentary: 'You ate everything on the trolley. Both tables watched in silence. You experienced no regret. Philosophers are still arguing about this one.', emoji: '\uD83D\uDE0B' },
+      ]
+    },
+    {
+      title: 'The Loop',
+      text: 'A trolley is heading toward 5 people on a looped track. If you divert it, it goes down a side track, hits a single large boulder, and the boulder will roll back and stop the trolley <strong>before it hits the 5 people anyway</strong>. But the single boulder is sentient and does not want to be hit.',
+      choices: [
+        { text: 'Do not pull the lever. The boulder would stop it anyway.', type: 'neutral', verdict: 'Correct. You understood the loop.', commentary: 'The boulder was relieved. The 5 people were fine. You solved a trolley problem with geometry. This is called consequentialist reasoning and it worked.', emoji: '\uD83E\uDEA8' },
+        { text: 'Pull the lever. Involve the boulder.', type: 'utilitarian', verdict: 'Unnecessary but effective.', commentary: 'The boulder was hit, was upset about it, but technically everyone survived. The boulder filed a complaint with the local ethics board.', emoji: '\uD83D\uDE14' },
+        { text: 'Ask the boulder how it feels about this.', type: 'chaotic', verdict: 'Progressively sentient.', commentary: 'The boulder had feelings. Many of them. You listened for too long. The trolley reached the 5 people before you finished the conversation.', emoji: '\uD83D\uDDE3\uFE0F' },
+      ]
+    },
+    {
+      title: 'The Small One',
+      text: 'A very small trolley, about the size of a shoe, is heading toward 5 ants. You can step on it to stop it, but it will damage your shoe. The ants do not know what is happening. One of them has <strong>been having a really tough week</strong>.',
+      choices: [
+        { text: 'Step on the trolley. Save the ants.', type: 'utilitarian', verdict: 'Consistent across trolley sizes.', commentary: 'The shoe was scuffed. The ants were saved. The struggling ant briefly looked up, then continued carrying a crumb four times its size. You did the right thing.', emoji: '\uD83D\uDC1C' },
+        { text: 'Do nothing. They are ants.', type: 'neutral', verdict: 'Scale-dependent ethics detected.', commentary: 'The trolley hit the ants. This confirms your moral framework requires a minimum threshold of sentience. That is a valid position held by many serious philosophers.', emoji: '\uD83E\uDD37' },
+        { text: 'Watch closely to see if the struggling ant makes it.', type: 'chaotic', verdict: 'Emotionally invested.', commentary: 'You watched with full attention. It did not make it. You felt something you did not expect to feel about an ant. This says something about you.', emoji: '\uD83D\uDE22' },
+      ]
+    },
+    {
+      title: 'The Final One',
+      text: 'There is no trolley. There are no people on tracks. You are just a person who spent several minutes thinking about trolleys. In front of you is a <strong>button that does nothing</strong>. Pressing it has absolutely no effect on anything. You have complete freedom.',
+      choices: [
+        { text: 'Press the button.', type: 'chaotic', verdict: 'Of course you did.', commentary: 'You pressed it. Nothing happened. You already knew nothing would happen. And yet. This is the most human thing you have done today.', emoji: '\uD83D\uDFE5' },
+        { text: 'Do not press the button.', type: 'neutral', verdict: 'Restrained. Suspicious.', commentary: 'You did not press it. You will think about pressing it later. You will wonder what would have happened, even though you know nothing would have happened.', emoji: '\uD83C\uDF9F\uFE0F' },
+        { text: 'Press the button several times rapidly.', type: 'utilitarian', verdict: 'Thorough.', commentary: 'You pressed it six times to confirm it did nothing. It did nothing six times. This is called empirical verification and it is actually quite rational.', emoji: '\uD83D\uDD2C' },
+      ]
+    }
+  ];
+
+  var PERSONALITIES = {
+    utilitarian: { type: 'The Calculated Consequentialist', desc: 'You consistently chose the option that saved the most lives or maximized overall wellbeing. Immanuel Kant would not approve. Jeremy Bentham would throw a party. You are probably fine with that.' },
+    chaotic:     { type: 'The Chaotic Empath',          desc: 'Your choices were guided by feeling, instinct, and occasionally hunger. You cared about the ant. You ate the desserts. You are unpredictable in a way that is either deeply human or mildly concerning. Possibly both.' },
+    neutral:     { type: 'The Pragmatic Bystander',     desc: 'You often chose inaction or the path of least involvement. This is actually a recognized philosophical position called deontology. You are in good company. Trolleys are not your problem.' },
+    mixed:       { type: 'The Moral Pragmatist',        desc: 'Your choices resisted easy categorization. You adapted your ethics to context rather than applying a single framework. Philosophers call this "moral pluralism." Everyone else calls it "being a normal person."' }
+  };
+
+  window.nextDilemma = function() {
+    current++;
+    if (current >= DILEMMAS.length) {
+      showEnd();
+    } else {
+      renderDilemma();
+    }
+  };
+
+  window.resetGame = function() {
+    current = 0;
+    scores = { utilitarian: 0, chaotic: 0, neutral: 0 };
+    answered = false;
+    document.getElementById('end-screen').classList.remove('visible');
+    document.getElementById('game-wrap').style.display = '';
+    renderDilemma();
+  };
+
+  function choose(choice) {
+    if (answered) return;
+    answered = true;
+    scores[choice.type]++;
+
+    var rc = document.getElementById('result-card');
+    document.getElementById('result-emoji').textContent = choice.emoji;
+    document.getElementById('result-verdict').textContent = choice.verdict;
+    document.getElementById('result-text').textContent = choice.commentary;
+    rc.classList.add('visible');
+
+    var btns = document.querySelectorAll('.choice-btn');
+    btns.forEach(function(b) { b.disabled = true; b.style.opacity = '.4'; });
+
+    var isLast = current === DILEMMAS.length - 1;
+    var nb = document.querySelector('.next-btn');
+    if (nb) nb.textContent = isLast ? 'See My Results \u2192' : 'Next Dilemma \u2192';
+  }
+
+  function renderDilemma() {
+    answered = false;
+    var d = DILEMMAS[current];
+    var total = DILEMMAS.length;
+
+    document.getElementById('progress-label').textContent = 'Dilemma ' + (current + 1) + ' of ' + total;
+    document.getElementById('progress-pct').textContent = Math.round(current / total * 100) + '%';
+    document.getElementById('progress-fill').style.width = (current / total * 100) + '%';
+    document.getElementById('dilemma-number').textContent = 'Dilemma ' + (current + 1);
+
+    var titleEl = document.getElementById('dilemma-title');
+    titleEl.innerHTML = d.title;
+
+    document.getElementById('dilemma-text').innerHTML = d.text;
+
+    var choicesEl = document.getElementById('choices');
+    choicesEl.innerHTML = '';
+
+    var letters = ['A', 'B', 'C', 'D'];
+    d.choices.forEach(function(choice, i) {
+      var btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.innerHTML = '<span class="choice-letter">' + letters[i] + '.</span><span>' + choice.text + '</span>';
+      (function(c) {
+        btn.addEventListener('click', function() { choose(c); });
+      })(choice);
+      choicesEl.appendChild(btn);
+    });
+
+    var rc = document.getElementById('result-card');
+    rc.classList.remove('visible');
+
+    var scene = document.getElementById('scene');
+    scene.style.animation = 'none';
+    scene.offsetHeight;
+    scene.style.animation = 'scene-in .4s ease backwards';
+  }
+
+  function showEnd() {
+    document.getElementById('game-wrap').style.display = 'none';
+    var end = document.getElementById('end-screen');
+    end.classList.add('visible');
+
+    document.getElementById('utilitarian-score').textContent = scores.utilitarian;
+    document.getElementById('chaotic-score').textContent = scores.chaotic;
+    document.getElementById('neutral-score').textContent = scores.neutral;
+
+    var max = Math.max(scores.utilitarian, scores.chaotic, scores.neutral);
+    var type = 'mixed';
+    if (scores.utilitarian === max && scores.utilitarian > scores.chaotic && scores.utilitarian > scores.neutral) type = 'utilitarian';
+    else if (scores.chaotic === max && scores.chaotic > scores.utilitarian && scores.chaotic > scores.neutral) type = 'chaotic';
+    else if (scores.neutral === max && scores.neutral > scores.utilitarian && scores.neutral > scores.chaotic) type = 'neutral';
+
+    var p = PERSONALITIES[type];
+    document.getElementById('personality-type').textContent = p.type;
+    document.getElementById('personality-desc').textContent = p.desc;
+  }
+
+  renderDilemma();
+})();
+</script>
+</body>
+</html>
