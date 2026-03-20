@@ -8,57 +8,46 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Fraunces:opsz,ital,wght@9..144,1,400&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0D0D0D; --surface: #161616; --ink: #F5F0E8; --muted: #6B6560;
-  }
+  :root { --bg: #0D0D0D; --surface: #161616; --ink: #F5F0E8; --muted: #6B6560; }
   html { scroll-behavior: smooth; }
   body { background: var(--bg); color: var(--ink); font-family: 'Bricolage Grotesque', sans-serif; min-height: 100vh; overflow-x: hidden; }
 
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-    opacity: .035; pointer-events: none; z-index: 999;
-  }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.035; pointer-events:none; z-index:999; }
 
-  nav { display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 2.5rem; border-bottom: 1px solid #1E1E1E; }
-  .logo { font-size: 1.1rem; font-weight: 800; letter-spacing: -.03em; color: var(--ink); text-decoration: none; }
-  .logo em { font-family: 'Fraunces', serif; font-style: italic; font-weight: 300; color: #FF5733; }
-  .nav-tag { font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  nav { display:flex; align-items:center; justify-content:space-between; padding:1.5rem 2.5rem; border-bottom:1px solid #1E1E1E; }
+  .logo { font-size:1.1rem; font-weight:800; letter-spacing:-.03em; color:var(--ink); text-decoration:none; }
+  .logo em { font-family:'Fraunces',serif; font-style:italic; font-weight:300; color:#FF5733; }
+  .nav-tag { font-size:.75rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
 
-  .hero { padding: 5rem 2.5rem 4rem; max-width: 900px; margin: 0 auto; text-align: center; }
-  .hero-eyebrow { display: inline-flex; align-items: center; gap: .5rem; background: #1E1E1E; border: 1px solid #2E2E2E; border-radius: 999px; padding: .35em 1em; font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 2rem; }
-  .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ADE80; box-shadow: 0 0 8px #4ADE80; animation: pulse 2s ease-in-out infinite; }
-  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .6; transform: scale(1.3); } }
-  .hero h1 { font-size: clamp(3rem, 9vw, 6.5rem); font-weight: 800; letter-spacing: -.04em; line-height: .95; margin-bottom: 1.5rem; }
-  .hero h1 em { font-family: 'Fraunces', serif; font-style: italic; font-weight: 300; color: #FF5733; }
-  .hero p { font-size: 1.1rem; color: var(--muted); max-width: 38ch; line-height: 1.65; margin: 0 auto; }
+  .hero { padding:5rem 2.5rem 4rem; max-width:900px; margin:0 auto; text-align:center; }
+  .hero-eyebrow { display:inline-flex; align-items:center; gap:.5rem; background:#1E1E1E; border:1px solid #2E2E2E; border-radius:999px; padding:.35em 1em; font-size:.75rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:2rem; }
+  .pulse-dot { width:6px; height:6px; border-radius:50%; background:#4ADE80; box-shadow:0 0 8px #4ADE80; animation:pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.3)} }
+  .hero h1 { font-size:clamp(3rem,9vw,6.5rem); font-weight:800; letter-spacing:-.04em; line-height:.95; margin-bottom:1.5rem; }
+  .hero h1 em { font-family:'Fraunces',serif; font-style:italic; font-weight:300; color:#FF5733; }
+  .hero p { font-size:1.1rem; color:var(--muted); max-width:38ch; line-height:1.65; margin:0 auto; }
 
-  .games-section { max-width: 1100px; margin: 0 auto; padding: 2rem 2rem 6rem; }
-  .games-label { font-size: .75rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem; padding-left: .25rem; }
-  .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+  .games-section { max-width:1100px; margin:0 auto; padding:2rem 2rem 6rem; }
+  .games-label { font-size:.75rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); margin-bottom:1.5rem; padding-left:.25rem; }
+  .games-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; }
 
-  .game-card {
-    position: relative; background: #161616; border: 1px solid #222; border-radius: 22px;
-    padding: 2rem; text-decoration: none; color: inherit;
-    display: flex; flex-direction: column; gap: .75rem; overflow: hidden;
-    transition: border-color .25s, transform .2s, box-shadow .25s;
-    animation: card-in .5s ease backwards;
-  }
-  .game-card:nth-child(1){animation-delay:.05s} .game-card:nth-child(2){animation-delay:.1s}
-  .game-card:nth-child(3){animation-delay:.15s} .game-card:nth-child(4){animation-delay:.2s}
-  .game-card:nth-child(5){animation-delay:.25s} .game-card:nth-child(6){animation-delay:.3s}
+  .game-card { position:relative; background:#161616; border:1px solid #222; border-radius:22px; padding:2rem; text-decoration:none; color:inherit; display:flex; flex-direction:column; gap:.75rem; overflow:hidden; transition:border-color .25s,transform .2s,box-shadow .25s; animation:card-in .5s ease backwards; }
+  .game-card:nth-child(1){animation-delay:.04s} .game-card:nth-child(2){animation-delay:.08s}
+  .game-card:nth-child(3){animation-delay:.12s} .game-card:nth-child(4){animation-delay:.16s}
+  .game-card:nth-child(5){animation-delay:.20s} .game-card:nth-child(6){animation-delay:.24s}
+  .game-card:nth-child(7){animation-delay:.28s} .game-card:nth-child(8){animation-delay:.32s}
   @keyframes card-in { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
   .game-card::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at 80% 20%, var(--card-glow) 0%, transparent 60%); opacity:0; transition:opacity .3s; pointer-events:none; }
   .game-card:hover { border-color:var(--card-accent); transform:translateY(-4px); box-shadow:0 20px 50px -15px var(--card-glow); }
   .game-card:hover::after { opacity:1; }
 
-  .card-icon { font-size: 2.5rem; line-height: 1; margin-bottom: .25rem; }
+  .card-icon { font-size:2.5rem; line-height:1; margin-bottom:.25rem; }
   .card-tag { display:inline-block; font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--card-accent); background:var(--card-glow); padding:.2em .7em; border-radius:999px; margin-bottom:.1rem; }
-  .card-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -.03em; line-height: 1.15; }
-  .card-desc { font-size: .9rem; color: var(--muted); line-height: 1.55; flex: 1; }
+  .card-title { font-size:1.4rem; font-weight:800; letter-spacing:-.03em; line-height:1.15; }
+  .card-desc { font-size:.9rem; color:var(--muted); line-height:1.55; flex:1; }
   .card-arrow { display:inline-flex; align-items:center; gap:.4rem; font-size:.8rem; font-weight:700; color:var(--card-accent); margin-top:.5rem; transition:gap .2s; }
-  .game-card:hover .card-arrow { gap: .7rem; }
+  .game-card:hover .card-arrow { gap:.7rem; }
 
   footer { text-align:center; padding:2rem; font-size:.8rem; color:#2E2E2E; border-top:1px solid #1A1A1A; }
 </style>
@@ -73,7 +62,7 @@
 <section class="hero">
   <div class="hero-eyebrow">
     <span class="pulse-dot"></span>
-    6 Experiences Available
+    8 Experiences Available
   </div>
   <h1>Little things that make you <em>think</em></h1>
   <p>Playful, interactive experiences for curious minds. No sign-up. No ads. Just fun.</p>
@@ -85,7 +74,7 @@
 
     <a href="life-in-numbers.html" class="game-card" style="--card-accent:#FFB800;--card-glow:#FFB80015">
       <div class="card-icon">&#128290;</div>
-      <span class="card-tag">Stats &amp; Numbers</span>
+      <span class="card-tag">Stats</span>
       <div class="card-title">Your Life in Numbers</div>
       <div class="card-desc">Enter your age and discover the astonishing statistics hiding inside your life — heartbeats, breaths, full moons, and more.</div>
       <span class="card-arrow">Play now &#8594;</span>
@@ -121,6 +110,30 @@
       <div class="card-title">The Trolley Problem but Worse</div>
       <div class="card-desc">8 moral dilemmas of escalating absurdity. Pull the lever, save the ants, eat the desserts. Discover your moral alignment.</div>
       <span class="card-arrow">Pull the lever &#8594;</span>
+    </a>
+
+    <a href="password.html" class="game-card" style="--card-accent:#00C8FF;--card-glow:#00C8FF15">
+      <div class="card-icon">&#128274;</div>
+      <span class="card-tag">Puzzle</span>
+      <div class="card-title">The Impossible Password</div>
+      <div class="card-desc">Create a password satisfying all requirements. New requirements appear as you type. Must contain a Roman numeral. And a planet. And a chess piece.</div>
+      <span class="card-arrow">Try your luck &#8594;</span>
+    </a>
+
+    <a href="compliment.html" class="game-card" style="--card-accent:#FF4D8D;--card-glow:#FF4D8D15">
+      <div class="card-icon">&#128150;</div>
+      <span class="card-tag">Feel Good</span>
+      <div class="card-title">The Compliment Machine</div>
+      <div class="card-desc">Scientifically calibrated compliments that are sincere, specific, and slightly absurd. You deserve one. Press the button.</div>
+      <span class="card-arrow">Receive compliment &#8594;</span>
+    </a>
+
+    <a href="excuse.html" class="game-card" style="--card-accent:#FF7A2F;--card-glow:#FF7A2F15">
+      <div class="card-icon">&#128517;</div>
+      <span class="card-tag">Utility</span>
+      <div class="card-title">The Excuse Generator</div>
+      <div class="card-desc">Choose your situation — late, ignoring emails, cancelling plans — and get a professionally crafted excuse with a believability rating.</div>
+      <span class="card-arrow">Generate excuse &#8594;</span>
     </a>
 
   </div>
