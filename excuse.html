@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Excuse Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Fraunces:opsz,ital,wght@9..144,1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0E0E0E; --surface: #181818; --ink: #F0ECE4;
+  --muted: #666; --orange: #FF7A2F; --cream: #F5EFE0;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--ink); font-family: 'Bricolage Grotesque', sans-serif; min-height: 100vh; }
+
+.back-nav { padding: 1.25rem 2rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #222; background: var(--surface); }
+.back-link { display: inline-flex; align-items: center; gap: .4rem; font-size: .85rem; font-weight: 700; color: var(--muted); text-decoration: none; transition: color .2s; }
+.back-link:hover { color: var(--ink); }
+.nav-title { font-size: .85rem; font-weight: 700; color: var(--ink); }
+
+.page { display: flex; flex-direction: column; align-items: center; min-height: 88vh; padding: 3rem 1.5rem 5rem; gap: 2rem; }
+
+.hero { text-align: center; }
+.hero-badge { display: inline-block; background: #1E1208; border: 1px solid var(--orange); color: var(--orange); border-radius: 999px; padding: .3em 1em; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 1rem; }
+.hero h1 { font-size: clamp(2.5rem, 9vw, 5rem); font-weight: 800; letter-spacing: -.04em; line-height: .95; margin-bottom: .75rem; }
+.hero h1 em { font-family: 'Fraunces', serif; font-style: italic; font-weight: 400; color: var(--orange); }
+.hero p { font-size: .95rem; color: var(--muted); max-width: 38ch; line-height: 1.65; margin: 0 auto; }
+
+/* SELECTOR */
+.selector-row { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; max-width: 600px; width: 100%; }
+.sel-btn {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: .8rem; font-weight: 700;
+  background: var(--surface); color: var(--muted);
+  border: 1.5px solid #2A2A2A; border-radius: 999px;
+  padding: .45em 1.1em;
+  cursor: pointer; transition: all .15s;
+  letter-spacing: .03em;
+}
+.sel-btn:hover, .sel-btn.active { background: var(--orange); color: #fff; border-color: var(--orange); }
+
+/* EXCUSE CARD */
+.excuse-card {
+  width: 100%; max-width: 600px;
+  background: var(--surface);
+  border: 2px solid #2A2A2A;
+  border-radius: 24px;
+  padding: 2rem;
+  min-height: 200px;
+  display: flex; flex-direction: column; justify-content: center; gap: 1.25rem;
+  position: relative; overflow: hidden;
+  transition: border-color .3s;
+}
+
+.excuse-card.has-excuse { border-color: var(--orange); }
+.excuse-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 0%, #FF7A2F10 0%, transparent 70%); pointer-events: none; }
+
+.excuse-context { font-size: .7rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); }
+.excuse-text {
+  font-size: clamp(1rem, 3vw, 1.3rem);
+  font-weight: 700; line-height: 1.5; letter-spacing: -.02em;
+  color: var(--ink);
+}
+.excuse-text em { font-family: 'Fraunces', serif; font-style: italic; font-weight: 400; color: var(--orange); }
+.excuse-rating { display: flex; align-items: center; gap: .75rem; }
+.excuse-believability { font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.believability-dots { display: flex; gap: 4px; }
+.b-dot { width: 8px; height: 8px; border-radius: 50%; background: #2A2A2A; }
+.b-dot.on { background: var(--orange); }
+
+.placeholder { font-size: 1rem; color: var(--muted); font-style: italic; text-align: center; margin: auto; }
+
+/* GENERATE BTN */
+.gen-btn {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1.1rem; font-weight: 800;
+  background: var(--orange); color: #fff;
+  border: none; border-radius: 16px;
+  padding: 1rem 2.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #8B3A0A;
+  transition: transform .15s, box-shadow .15s;
+  letter-spacing: -.02em;
+}
+.gen-btn:hover { transform: translateY(-3px); box-shadow: 0 7px 0 #8B3A0A; }
+.gen-btn:active { transform: translateY(1px); box-shadow: 0 2px 0 #8B3A0A; }
+
+/* COPY BTN */
+.copy-btn {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: .82rem; font-weight: 700;
+  background: transparent; color: var(--muted);
+  border: 1.5px solid #2A2A2A; border-radius: 10px;
+  padding: .4rem .9rem;
+  cursor: pointer; transition: all .15s;
+}
+.copy-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+.count-label { font-size: .78rem; color: var(--muted); }
+
+footer { text-align: center; padding: 2rem; font-size: .8rem; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<nav class="back-nav">
+  <a href="index.html" class="back-link">&#8592; Back</a>
+  <span style="color:#2A2A2A;font-size:.8rem">|</span>
+  <span class="nav-title">The Excuse Generator</span>
+</nav>
+
+<div class="page">
+  <div class="hero">
+    <div class="hero-badge">&#128517; Professionally Crafted Lies</div>
+    <h1>The <em>Excuse</em> Generator</h1>
+    <p>Select a situation, generate your excuse. Use responsibly. Or don't. Mostly don't.</p>
+  </div>
+
+  <div class="selector-row" id="selector-row"></div>
+
+  <div class="excuse-card" id="excuse-card">
+    <div class="placeholder" id="placeholder">Select a situation and generate your excuse.</div>
+  </div>
+
+  <button class="gen-btn" onclick="generate()">Generate Excuse &#127922;</button>
+  <p class="count-label" id="count-label"></p>
+</div>
+
+<footer>*Not responsible for any consequences of actual use &middot; The Excuse Generator</footer>
+
+<script>
+(function() {
+  var selected = 'late';
+  var count = 0;
+
+  var SITUATIONS = [
+    { id: 'late',     label: 'Being Late' },
+    { id: 'email',    label: 'Ignoring Email' },
+    { id: 'homework', label: 'Missing Homework' },
+    { id: 'forgot',   label: 'Forgetting Something' },
+    { id: 'cancel',   label: 'Cancelling Plans' },
+  ];
+
+  var EXCUSES = {
+    late: [
+      { text: 'I was <em>deeply involved in an ethical dilemma</em> about a pigeon I found on the bus and I had to see it through.', b: 1 },
+      { text: 'My phone rerouted me through a neighbourhood I had <em>genuinely never seen before</em> despite living here for six years.', b: 3 },
+      { text: 'There was a <em>swan incident.</em> I do not want to elaborate. Everyone is fine.', b: 2 },
+      { text: 'I left on time but my reflection in the window looked so tired I had to <em>sit with that for a moment.</em>', b: 1 },
+      { text: 'The bus came <em>exactly on time</em> for once and I was so shocked I missed it.', b: 2 },
+      { text: 'I was <em>composing an apology for being late</em> and it took longer than expected.', b: 2 },
+      { text: 'A child asked me what clouds were made of and I <em>genuinely could not remember</em> and had to look it up.', b: 3 },
+      { text: 'Traffic. But the specific kind that is <em>invisible to apps but completely real</em> to anyone inside it.', b: 4 },
+    ],
+    email: [
+      { text: 'I read it, thought a response, felt good about the response, and then somehow <em>forgot to type it.</em>', b: 4 },
+      { text: 'It arrived during my <em>designated period of not doing things</em> and I have not left that period yet.', b: 1 },
+      { text: 'I was waiting until I had something <em>genuinely useful to say.</em> That moment has not arrived.', b: 3 },
+      { text: 'My email client <em>organised it so well</em> that I could not find it again.', b: 3 },
+      { text: 'I have been composing the reply in my head for <em>several days.</em> It is nearly finished.', b: 2 },
+      { text: 'I marked it as unread to deal with later and then <em>my whole inbox became unread</em> through a separate incident.', b: 3 },
+    ],
+    homework: [
+      { text: 'I completed it but left it at home, which is a shame because <em>it was genuinely my best work.</em>', b: 2 },
+      { text: 'I started it and then became interested in a related topic so thorough that the <em>homework felt redundant.</em>', b: 1 },
+      { text: 'I have it. It is <em>in a format I cannot currently explain</em> but it exists.', b: 1 },
+      { text: 'My notes were so good I <em>assumed someone else would handle the write-up.</em>', b: 1 },
+      { text: 'I did it on the wrong day because I was <em>having an excellent week</em> and lost track.', b: 2 },
+    ],
+    forgot: [
+      { text: 'I remembered it this morning, which is when I also remembered I would forget it, and I was <em>right on both counts.</em>', b: 2 },
+      { text: 'I have a system. The system <em>worked perfectly.</em> The system did not include this item.', b: 3 },
+      { text: 'I wrote it down. I left the note somewhere <em>even more memorable</em> than where I put the thing.', b: 3 },
+      { text: 'I have been remembering it reliably for weeks. Today was the day I <em>trusted myself too much.</em>', b: 3 },
+      { text: 'I walked through a doorway and my brain filed it as <em>context from the previous room.</em> This is a real phenomenon.', b: 4 },
+    ],
+    cancel: [
+      { text: 'Something came up that I <em>cannot fully characterise yet</em> but will be able to soon.', b: 1 },
+      { text: 'I have been looking forward to this, which is exactly why I need to <em>rest before I can enjoy it.</em>', b: 1 },
+      { text: 'My body has issued what I can only describe as a <em>formal objection</em> to leaving the house.', b: 2 },
+      { text: 'I double-booked with a prior obligation I had <em>successfully forgotten about until this morning.</em>', b: 3 },
+      { text: 'I am fine. I am simply <em>not going out fine.</em>', b: 2 },
+      { text: 'An earlier version of me made these plans and I <em>no longer have the same values.</em>', b: 1 },
+    ],
+  };
+
+  var lastExcuse = null;
+
+  function buildSelector() {
+    var row = document.getElementById('selector-row');
+    SITUATIONS.forEach(function(s) {
+      var btn = document.createElement('button');
+      btn.className = 'sel-btn' + (s.id === selected ? ' active' : '');
+      btn.textContent = s.label;
+      btn.id = 'sel-' + s.id;
+      btn.addEventListener('click', function() {
+        selected = s.id;
+        document.querySelectorAll('.sel-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+      });
+      row.appendChild(btn);
+    });
+  }
+
+  window.generate = function() {
+    var pool = EXCUSES[selected];
+    var excuse;
+    do { excuse = pool[Math.floor(Math.random() * pool.length)]; } while (excuse === lastExcuse && pool.length > 1);
+    lastExcuse = excuse;
+    count++;
+
+    var situation = SITUATIONS.filter(function(s){return s.id===selected;})[0].label;
+    var card = document.getElementById('excuse-card');
+    card.classList.add('has-excuse');
+
+    var dots = '';
+    for (var i = 1; i <= 5; i++) {
+      dots += '<div class="b-dot' + (i <= excuse.b ? ' on' : '') + '"></div>';
+    }
+
+    var believabilityLabel = ['','Not even slightly','Unlikely but possible','Plausible at a glance','Mostly believable','Completely credible'][excuse.b];
+
+    document.getElementById('placeholder') && (document.getElementById('placeholder').remove());
+
+    card.innerHTML =
+      '<div class="excuse-context">Excuse for: ' + situation + '</div>' +
+      '<div class="excuse-text">' + excuse.text + '</div>' +
+      '<div class="excuse-rating">' +
+        '<div class="believability-dots">' + dots + '</div>' +
+        '<span class="excuse-believability">' + believabilityLabel + '</span>' +
+        '<button class="copy-btn" onclick="copyExcuse(this)">Copy</button>' +
+      '</div>';
+
+    document.getElementById('count-label').textContent = count + ' excuse' + (count === 1 ? '' : 's') + ' generated';
+  };
+
+  window.copyExcuse = function(btn) {
+    var text = document.querySelector('.excuse-text');
+    if (!text) return;
+    var plain = text.textContent;
+    navigator.clipboard.writeText(plain).then(function() {
+      btn.textContent = 'Copied!';
+      setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+    });
+  };
+
+  buildSelector();
+})();
+</script>
+</body>
+</html>
