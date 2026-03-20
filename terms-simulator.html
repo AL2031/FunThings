@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms &amp; Conditions Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Fraunces:opsz,ital,wght@9..144,1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F0EDE8;
+    --paper: #FAF8F5;
+    --ink: #1C1814;
+    --muted: #7A7268;
+    --red: #D94032;
+    --green: #2E7D5E;
+    --yellow: #C8890A;
+    --blue: #2055A8;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Bricolage Grotesque', sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
+
+  /* grain */
+  body::after { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); opacity: .04; pointer-events: none; z-index: 999; }
+
+  /* ── NAV ── */
+  .back-nav { padding: 1.25rem 2rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #DDD8D0; background: var(--paper); }
+  .back-link { display: inline-flex; align-items: center; gap: .4rem; font-size: .85rem; font-weight: 700; color: var(--muted); text-decoration: none; transition: color .2s; }
+  .back-link:hover { color: var(--ink); }
+  .nav-title { font-size: .85rem; font-weight: 700; color: var(--ink); }
+
+  /* ── SCREENS ── */
+  .screen { display: none; }
+  .screen.active { display: flex; }
+
+  /* ── INTRO SCREEN ── */
+  #screen-intro {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 85vh;
+    padding: 3rem 2rem;
+    text-align: center;
+    gap: 1.5rem;
+  }
+
+  .intro-doc {
+    width: 72px; height: 90px;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 4px 12px 4px 4px;
+    position: relative;
+    box-shadow: 4px 4px 0 var(--ink);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .intro-doc::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 20px; height: 20px;
+    background: var(--bg);
+    border-left: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+    border-radius: 0 0 0 4px;
+  }
+
+  .doc-lines { padding: 26px 10px 8px; display: flex; flex-direction: column; gap: 5px; }
+  .doc-line { height: 4px; background: #DDDAD4; border-radius: 2px; }
+  .doc-line:nth-child(3) { width: 70%; }
+  .doc-line:nth-child(5) { width: 55%; }
+
+  #screen-intro h1 { font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 800; letter-spacing: -.04em; line-height: .95; max-width: 16ch; }
+  #screen-intro h1 em { font-family: 'Fraunces', serif; font-style: italic; font-weight: 400; color: var(--red); }
+  #screen-intro p { font-size: 1.05rem; color: var(--muted); max-width: 38ch; line-height: 1.65; }
+
+  .stat-row { display: flex; gap: 2.5rem; flex-wrap: wrap; justify-content: center; padding: 1.5rem 2rem; background: var(--paper); border: 1.5px solid #DDD8D0; border-radius: 16px; }
+  .stat-item { text-align: center; }
+  .stat-num { font-size: 1.75rem; font-weight: 800; letter-spacing: -.04em; }
+  .stat-label { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+
+  .start-btn { font-family: var(--sans); font-size: 1.1rem; font-weight: 800; background: var(--ink); color: var(--paper); border: none; border-radius: 14px; padding: .9rem 2.5rem; cursor: pointer; transition: transform .15s, background .15s; letter-spacing: -.01em; box-shadow: 0 4px 0 #3A3020; }
+  .start-btn:hover { background: var(--red); transform: translateY(-2px); box-shadow: 0 6px 0 #8B1A10; }
+  .start-btn:active { transform: translateY(2px); box-shadow: none; }
+
+  /* ── GAME SCREEN ── */
+  #screen-game {
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1.5rem 4rem;
+    min-height: 85vh;
+    gap: 1.5rem;
+  }
+
+  .progress-bar-wrap { width: 100%; max-width: 680px; }
+  .progress-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem; }
+  .progress-label { font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .progress-count { font-family: var(--mono); font-size: .85rem; font-weight: 700; color: var(--ink); }
+  .progress-track { height: 6px; background: #DDD8D0; border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--ink); border-radius: 99px; transition: width .4s ease; }
+
+  /* clause card */
+  .clause-card {
+    width: 100%; max-width: 680px;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 20px;
+    box-shadow: 5px 5px 0 var(--ink);
+    overflow: hidden;
+    animation: card-slide-in .35s ease backwards;
+  }
+
+  @keyframes card-slide-in {
+    from { opacity: 0; transform: translateY(20px) scale(.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .clause-header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .clause-section { font-family: var(--mono); font-size: .72rem; font-weight: 700; letter-spacing: .08em; color: #AAA49C; }
+  .clause-tag { font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: .2em .8em; border-radius: 999px; }
+  .tag-standard { background: #2A2620; color: #AAA49C; }
+  .tag-unusual { background: #3A2010; color: #FFB800; }
+  .tag-suspicious { background: #2A1010; color: #FF6B5B; }
+  .tag-absurd { background: #1A0A2A; color: #C87AFF; }
+
+  .clause-body { padding: 2rem 1.5rem 1.5rem; }
+  .clause-title { font-size: 1.2rem; font-weight: 800; letter-spacing: -.02em; margin-bottom: 1rem; line-height: 1.2; }
+  .clause-text { font-family: var(--mono); font-size: .82rem; color: var(--muted); line-height: 1.8; background: var(--bg); border-radius: 10px; padding: 1.25rem; border: 1px solid #DDD8D0; }
+  .clause-text strong { color: var(--ink); font-weight: 700; }
+
+  .clause-footer { padding: 1rem 1.5rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .footer-hint { font-size: .78rem; color: var(--muted); max-width: 26ch; line-height: 1.4; }
+
+  .agree-btn {
+    font-family: var(--sans);
+    font-size: 1rem;
+    font-weight: 800;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: .75rem 1.75rem;
+    cursor: pointer;
+    transition: transform .15s, filter .15s;
+    letter-spacing: -.01em;
+    box-shadow: 0 3px 0 #1A4A35;
+    white-space: nowrap;
+  }
+
+  .agree-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .agree-btn:active { transform: translateY(1px); box-shadow: none; }
+
+  .skip-hint { font-size: .75rem; font-weight: 600; color: #BDB8B0; text-align: center; font-style: italic; }
+
+  /* ── END SCREEN ── */
+  #screen-end {
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem 2rem 5rem;
+    min-height: 85vh;
+    gap: 1.5rem;
+  }
+
+  .end-header { text-align: center; max-width: 520px; }
+  .end-stamp { display: inline-block; font-family: var(--mono); font-size: .75rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--red); border: 2.5px solid var(--red); padding: .3em 1em; border-radius: 6px; margin-bottom: 1rem; transform: rotate(-2deg); }
+  .end-header h2 { font-size: clamp(2rem, 7vw, 4rem); font-weight: 800; letter-spacing: -.04em; line-height: 1; margin-bottom: .75rem; }
+  .end-header h2 em { font-family: 'Fraunces', serif; font-style: italic; font-weight: 400; color: var(--red); }
+  .end-header p { font-size: 1rem; color: var(--muted); line-height: 1.6; }
+
+  .agreed-list { width: 100%; max-width: 680px; display: flex; flex-direction: column; gap: .75rem; }
+  .agreed-item { background: var(--paper); border: 1.5px solid #DDD8D0; border-radius: 14px; padding: 1.1rem 1.25rem; display: flex; gap: 1rem; align-items: flex-start; }
+  .agreed-check { width: 22px; height: 22px; background: var(--red); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; font-size: .75rem; color: #fff; font-weight: 700; }
+  .agreed-text { font-size: .88rem; color: var(--ink); line-height: 1.5; }
+  .agreed-text strong { color: var(--red); }
+
+  .play-again-btn { font-family: var(--sans); font-size: 1rem; font-weight: 800; background: var(--ink); color: var(--paper); border: none; border-radius: 14px; padding: .85rem 2.25rem; cursor: pointer; transition: transform .15s, background .15s; letter-spacing: -.01em; box-shadow: 0 4px 0 #3A3020; margin-top: .5rem; }
+  .play-again-btn:hover { background: var(--red); transform: translateY(-2px); }
+
+  footer { text-align: center; padding: 2rem; font-size: .8rem; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<nav class="back-nav">
+  <a href="index.html" class="back-link">&#8592; Back</a>
+  <span style="color:#C8C0B8;font-size:.8rem">|</span>
+  <span class="nav-title">Terms &amp; Conditions Simulator</span>
+</nav>
+
+<!-- INTRO -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-doc">
+    <div class="doc-lines">
+      <div class="doc-line"></div><div class="doc-line"></div>
+      <div class="doc-line"></div><div class="doc-line"></div>
+      <div class="doc-line"></div><div class="doc-line"></div>
+    </div>
+  </div>
+  <h1>Terms &amp; <em>Conditions</em> Simulator</h1>
+  <p>Nobody reads them. You are about to. These clauses are legally binding in no jurisdiction but emotionally binding in all of them.</p>
+  <div class="stat-row">
+    <div class="stat-item">
+      <div class="stat-num">32,000</div>
+      <div class="stat-label">Avg. T&amp;C word count</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">0.06%</div>
+      <div class="stat-label">Users who read them</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">Your soul</div>
+      <div class="stat-label">Potential cost</div>
+    </div>
+  </div>
+  <button class="start-btn" onclick="startGame()">I Have Read and Agree &#8594;</button>
+  <p style="font-size:.8rem;color:var(--muted);font-style:italic">(You have not read anything yet. But when has that stopped you?)</p>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="progress-bar-wrap">
+    <div class="progress-meta">
+      <span class="progress-label">Progress</span>
+      <span class="progress-count" id="progress-count">0 / 0</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="clause-card" id="clause-card">
+    <div class="clause-header">
+      <span class="clause-section" id="clause-section">Section 1.0</span>
+      <span class="clause-tag tag-standard" id="clause-tag">Standard</span>
+    </div>
+    <div class="clause-body">
+      <div class="clause-title" id="clause-title">Loading...</div>
+      <div class="clause-text" id="clause-text"></div>
+    </div>
+    <div class="clause-footer">
+      <p class="footer-hint" id="footer-hint"></p>
+      <button class="agree-btn" id="agree-btn" onclick="agreeAndNext()">I Agree &#10003;</button>
+    </div>
+  </div>
+  <p class="skip-hint" id="skip-hint"></p>
+</div>
+
+<!-- END -->
+<div id="screen-end" class="screen">
+  <div class="end-header">
+    <span class="end-stamp">AGREEMENT EXECUTED</span>
+    <h2>Congratulations, <em>probably.</em></h2>
+    <p>By clicking Agree 10 times without reading, you have officially agreed to all of the following. This is legally enforceable in the Metaverse.</p>
+  </div>
+  <div class="agreed-list" id="agreed-list"></div>
+  <button class="play-again-btn" onclick="resetGame()">Try Again (You Won't Read It) &#8594;</button>
+</div>
+
+<footer>*No actual agreements were formed. Probably. &middot; Terms &amp; Conditions Simulator</footer>
+
+<script>
+(function() {
+  var CLAUSES = [
+    {
+      section: 'Section 1.1 - Definitions',
+      tag: 'standard',
+      tagLabel: 'Standard',
+      title: 'Acceptance of Terms',
+      text: 'By accessing or using this Service, you confirm that you are <strong>at least 13 years of age</strong>, that you have read these Terms in their entirety, and that you possess the legal authority to enter into this agreement on behalf of yourself and any pets currently residing at your primary address.',
+      hint: 'Pretty normal so far.',
+      summary: 'You agreed to terms on behalf of your pets.'
+    },
+    {
+      section: 'Section 2.4 - Data Collection',
+      tag: 'unusual',
+      tagLabel: 'Unusual',
+      title: 'Information We Collect',
+      text: 'We collect information you provide directly, including your name, email, and the <strong>approximate emotional state</strong> you were in when you signed up. We also collect data about your device, your browsing behavior, and your opinions about whether cereal is a soup. This data is used to improve your experience and resolve internal debates at our company.',
+      hint: 'The cereal-as-soup debate is important to them.',
+      summary: 'You allowed them to log your emotional state and cereal opinions.'
+    },
+    {
+      section: 'Section 3.0 - User Conduct',
+      tag: 'standard',
+      tagLabel: 'Standard',
+      title: 'Prohibited Activities',
+      text: 'You agree not to use this platform to distribute spam, malware, or <strong>unsolicited opinions about other users\u2019 font choices</strong>. You further agree not to reverse-engineer our software, impersonate our staff, or use this service to settle ongoing disputes with your neighbor about lawn ornament placement.',
+      hint: 'Font opinion enforcement is strictly moderated.',
+      summary: 'You are banned from unsolicited font criticism.'
+    },
+    {
+      section: 'Section 4.2 - Intellectual Property',
+      tag: 'unusual',
+      tagLabel: 'Unusual',
+      title: 'License to Your Content',
+      text: 'By submitting content, you grant us a worldwide, royalty-free, sublicensable license to use, reproduce, modify, and publicly perform your content, including but not limited to <strong>any dreams you record in the optional Dream Journal feature</strong> (if launched), across all media formats now known or invented after the heat death of the universe.',
+      hint: 'The Dream Journal feature may or may not exist.',
+      summary: 'You granted them a license to your dreams, retroactively.'
+    },
+    {
+      section: 'Section 5.8 - Arbitration',
+      tag: 'suspicious',
+      tagLabel: 'Suspicious',
+      title: 'Dispute Resolution',
+      text: 'Any disputes shall be resolved through <strong>binding arbitration in the town of Blandford, Massachusetts</strong>, at a time of our choosing, using a mediator selected by us from a list we have not yet compiled. You waive your right to a jury trial, a class action, and the right to complain about this clause to anyone who has not also agreed to these terms.',
+      hint: 'Blandford, MA has a population of 1,299.',
+      summary: 'You agreed to resolve disputes in Blandford, MA (pop. 1,299).'
+    },
+    {
+      section: 'Section 6.1 - Modifications',
+      tag: 'unusual',
+      tagLabel: 'Unusual',
+      title: 'Changes to These Terms',
+      text: 'We reserve the right to modify these Terms at any time, for any reason, including but not limited to <strong>office bets, aesthetic preferences, or Mercury being in retrograde</strong>. Continued use of the Service after changes are posted constitutes your acceptance, even if you are asleep, on vacation, or experiencing a personal crisis at the time of posting.',
+      hint: 'Mercury was in retrograde when this was drafted.',
+      summary: 'You accepted changes that may be made due to Mercury retrograde.'
+    },
+    {
+      section: 'Section 7.3 - Liability',
+      tag: 'suspicious',
+      tagLabel: 'Suspicious',
+      title: 'Limitation of Liability',
+      text: 'To the maximum extent permitted by law, we are not liable for any damages arising from your use of the Service, including <strong>indirect, incidental, emotional, or existential damages</strong>. We are also not responsible for any sudden reconsideration of your life choices that may occur while using this platform.',
+      hint: 'Existential damages are a real legal category to them.',
+      summary: 'You cannot sue them for existential damages.'
+    },
+    {
+      section: 'Section 8.0 - Soul Provisions',
+      tag: 'absurd',
+      tagLabel: 'Absurd',
+      title: 'Transfer of Intangible Assets',
+      text: 'In consideration for access to this Service, you hereby agree to <strong>transfer a non-exclusive, 7% stake in your immortal soul</strong> (if applicable) to Company and its successors. This clause is null and void in jurisdictions where souls are recognized as inalienable property. You confirm that your soul is not currently encumbered by any prior agreements with supernatural third parties.',
+      hint: '7% is considered industry standard.',
+      summary: 'You transferred 7% of your soul (non-exclusive, if applicable).'
+    },
+    {
+      section: 'Section 9.1 - Governing Law',
+      tag: 'absurd',
+      tagLabel: 'Absurd',
+      title: 'Jurisdiction and Governing Law',
+      text: 'These Terms shall be governed by and construed in accordance with the laws of the <strong>Principality of Sealand</strong>, a sovereign nation located on a World War II sea fort seven nautical miles off the coast of Suffolk, England. You agree that any legal proceedings will be conducted in English, specifically in the <em>extremely formal</em> dialect spoken exclusively in 19th century British courtrooms.',
+      hint: 'Sealand has a population of about 5 people.',
+      summary: 'You consented to Sealand as your governing jurisdiction.'
+    },
+    {
+      section: 'Section 10.0 - Final Provisions',
+      tag: 'absurd',
+      tagLabel: 'Absurd',
+      title: 'Entire Agreement and Acknowledgement',
+      text: 'This agreement constitutes the entire understanding between you and Company, superseding all prior agreements, conversations, and <strong>meaningful eye contact</strong>. By clicking Agree, you confirm that you have read all 847 pages of this document (pages 2-846 are blank, but their blankness carries legal weight), that you understand each clause, and that you accept full moral responsibility for clicking this button.',
+      hint: 'Pages 2-846 are legally blank.',
+      summary: 'You accepted moral responsibility for clicking a button.'
+    }
+  ];
+
+  var current = 0;
+
+  window.startGame = function() {
+    current = 0;
+    showScreen('screen-game');
+    renderClause();
+  };
+
+  window.agreeAndNext = function() {
+    current++;
+    if (current >= CLAUSES.length) {
+      showEnd();
+    } else {
+      var card = document.getElementById('clause-card');
+      card.style.animation = 'none';
+      card.offsetHeight; // reflow
+      card.style.animation = 'card-slide-in .35s ease backwards';
+      renderClause();
+    }
+  };
+
+  window.resetGame = function() {
+    showScreen('screen-intro');
+  };
+
+  function showScreen(id) {
+    var screens = document.querySelectorAll('.screen');
+    screens.forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+  }
+
+  function renderClause() {
+    var c = CLAUSES[current];
+    var total = CLAUSES.length;
+    document.getElementById('progress-count').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('progress-fill').style.width = ((current / total) * 100) + '%';
+    document.getElementById('clause-section').textContent = c.section;
+    document.getElementById('clause-title').textContent = c.title;
+    document.getElementById('clause-text').innerHTML = c.text;
+    document.getElementById('footer-hint').textContent = c.hint;
+
+    var tagEl = document.getElementById('clause-tag');
+    tagEl.textContent = c.tagLabel;
+    tagEl.className = 'clause-tag tag-' + c.tag;
+
+    var isLast = current === CLAUSES.length - 1;
+    document.getElementById('agree-btn').textContent = isLast ? 'I Agree to Everything \u2713' : 'I Agree \u2713';
+    document.getElementById('skip-hint').textContent = isLast
+      ? 'This is the final clause. There is no escape.'
+      : 'There is no Decline button. There never is.';
+  }
+
+  function showEnd() {
+    showScreen('screen-end');
+    var list = document.getElementById('agreed-list');
+    list.innerHTML = '';
+    CLAUSES.forEach(function(c) {
+      var item = document.createElement('div');
+      item.className = 'agreed-item';
+      item.innerHTML =
+        '<div class="agreed-check">&#10003;</div>' +
+        '<div class="agreed-text"><strong>' + c.tagLabel.toUpperCase() + ':</strong> ' + c.summary + '</div>';
+      list.appendChild(item);
+    });
+  }
+})();
+</script>
+</body>
+</html>
