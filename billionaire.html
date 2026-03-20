@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spend a Billionaire's Fortune</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Fraunces:opsz,ital,wght@9..144,1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0A0F0A; --surface: #111811; --surface2: #182018;
+  --ink: #E8F5E8; --muted: #5A7A5A; --green: #4ADE80;
+  --gold: #FFD700; --red: #FF5555; --radius: 18px;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--ink); font-family: 'Bricolage Grotesque', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+.back-nav { padding: 1.25rem 2rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #1A2A1A; background: var(--surface); }
+.back-link { display: inline-flex; align-items: center; gap: .4rem; font-size: .85rem; font-weight: 700; color: var(--muted); text-decoration: none; transition: color .2s; }
+.back-link:hover { color: var(--ink); }
+.nav-title { font-size: .85rem; font-weight: 700; color: var(--ink); }
+
+/* BUDGET BAR */
+.budget-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid #1A2A1A;
+  padding: 1rem 2rem;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.budget-label { font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.budget-amount {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 800; letter-spacing: -.04em;
+  color: var(--green);
+  font-variant-numeric: tabular-nums;
+  transition: color .3s;
+}
+.budget-amount.low { color: var(--gold); }
+.budget-amount.broke { color: var(--red); }
+.budget-track { width: 100%; height: 8px; background: #1A2A1A; border-radius: 99px; overflow: hidden; margin-top: .5rem; }
+.budget-fill { height: 100%; background: var(--green); border-radius: 99px; transition: width .4s ease, background .4s; }
+.budget-fill.low { background: var(--gold); }
+.budget-fill.broke { background: var(--red); }
+.budget-spent-label { font-size: .8rem; color: var(--muted); white-space: nowrap; }
+
+/* HERO */
+.hero { padding: 3rem 2rem 2rem; text-align: center; max-width: 700px; margin: 0 auto; }
+.hero-eyebrow { display: inline-block; background: #1A2A1A; border: 1px solid #2A3A2A; border-radius: 999px; padding: .3em 1em; font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--green); margin-bottom: 1.25rem; }
+.hero h1 { font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 800; letter-spacing: -.04em; line-height: .95; margin-bottom: 1rem; }
+.hero h1 em { font-family: 'Fraunces', serif; font-style: italic; font-weight: 400; color: var(--gold); }
+.hero p { font-size: 1rem; color: var(--muted); max-width: 42ch; margin: 0 auto; line-height: 1.65; }
+
+/* GRID */
+.shop-section { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+.shop-label { font-size: .75rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem; padding-left: .25rem; }
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+
+.item-card {
+  background: var(--surface);
+  border: 1.5px solid #1A2A1A;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: flex; flex-direction: column; gap: .75rem;
+  transition: border-color .2s, transform .15s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.item-card:hover { border-color: #2A4A2A; transform: translateY(-2px); box-shadow: 0 12px 40px -10px rgba(74,222,128,.1); }
+.item-card.maxed { border-color: var(--green); background: #0D1A0D; }
+.item-card.maxed::after { content: 'MAXED'; position: absolute; top: 1rem; right: 1rem; font-size: .65rem; font-weight: 700; letter-spacing: .1em; color: var(--green); background: #1A3A1A; padding: .2em .6em; border-radius: 999px; }
+
+.item-emoji { font-size: 2rem; }
+.item-name { font-size: 1.05rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; }
+.item-price { font-size: .85rem; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
+.item-desc { font-size: .82rem; color: var(--muted); line-height: 1.5; flex: 1; }
+.item-count-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: .25rem; }
+.item-counter { font-size: .85rem; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; min-width: 3ch; }
+
+.buy-btn {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: .85rem; font-weight: 800;
+  background: #1A3A1A; color: var(--green);
+  border: 1.5px solid #2A4A2A;
+  border-radius: 10px;
+  padding: .5rem 1.1rem;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  white-space: nowrap;
+}
+.buy-btn:hover:not(:disabled) { background: #2A5A2A; transform: scale(1.03); }
+.buy-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+/* BOUGHT LIST */
+.receipt {
+  max-width: 700px; margin: 0 auto;
+  background: var(--surface);
+  border: 1.5px solid #1A2A1A;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  display: none;
+}
+.receipt.visible { display: block; }
+.receipt-title { font-size: .75rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+.receipt-items { display: flex; flex-direction: column; gap: .5rem; max-height: 200px; overflow-y: auto; }
+.receipt-item { display: flex; justify-content: space-between; font-size: .85rem; color: var(--ink); border-bottom: 1px solid #1A2A1A; padding-bottom: .4rem; }
+.receipt-item:last-child { border-bottom: none; }
+.receipt-item span { color: var(--gold); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* BROKE BANNER */
+.broke-banner { display: none; background: linear-gradient(135deg, #1A0A0A, #2A0A0A); border: 2px solid var(--red); border-radius: var(--radius); padding: 2rem; text-align: center; max-width: 700px; margin: 0 auto 2rem; }
+.broke-banner.visible { display: block; }
+.broke-banner h3 { font-size: 1.5rem; font-weight: 800; letter-spacing: -.03em; margin-bottom: .5rem; color: var(--red); }
+.broke-banner p { font-size: .9rem; color: #AA6060; line-height: 1.6; }
+
+footer { text-align: center; padding: 2rem; font-size: .8rem; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<nav class="back-nav">
+  <a href="index.html" class="back-link">&#8592; Back</a>
+  <span style="color:#2A3A2A;font-size:.8rem">|</span>
+  <span class="nav-title">Spend a Billionaire's Fortune</span>
+</nav>
+
+<div class="budget-bar">
+  <div style="flex:1;min-width:200px">
+    <div class="budget-label">Remaining Fortune</div>
+    <div class="budget-amount" id="budget-display">$200,000,000,000</div>
+    <div class="budget-track"><div class="budget-fill" id="budget-fill" style="width:100%"></div></div>
+  </div>
+  <div style="text-align:right">
+    <div class="budget-label">Spent</div>
+    <div class="budget-spent-label" id="spent-display">$0</div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-eyebrow">&#128176; $200 Billion to Burn</div>
+  <h1>Spend a <em>Billionaire's</em> Fortune</h1>
+  <p>You have $200,000,000,000. The median American household earns $75k/year. Try to spend it all.</p>
+</div>
+
+<div class="shop-section">
+  <div class="receipt" id="receipt">
+    <div class="receipt-title">Your Purchases</div>
+    <div class="receipt-items" id="receipt-items"></div>
+  </div>
+  <div class="broke-banner" id="broke-banner">
+    <h3>You are officially broke.</h3>
+    <p>You spent $200 billion. You have achieved what most humans could not imagine doing in 2.6 million lifetimes. Refresh to try again.</p>
+  </div>
+  <p class="shop-label">Choose your purchases</p>
+  <div class="shop-grid" id="shop-grid"></div>
+</div>
+
+<footer>*Prices are approximate and probably wrong &middot; Spend a Billionaire's Fortune</footer>
+
+<script>
+(function() {
+  var TOTAL = 200000000000;
+  var remaining = TOTAL;
+  var purchases = {};
+
+  var ITEMS = [
+    { id:'coffee', emoji:'\u2615', name:'Cup of Coffee', price:5, desc:'A humble oat latte. The most normal thing on this list.', max:9999 },
+    { id:'pizza', emoji:'\uD83C\uDF55', name:'Large Pizza', price:15, desc:'Feeds a family for a night. You could feed 13 billion families.', max:9999 },
+    { id:'book', emoji:'\uD83D\uDCDA', name:'Hardcover Book', price:28, desc:'Knowledge is power. You can afford 7 billion of them.', max:9999 },
+    { id:'airpods', emoji:'\uD83C\uDFA7', name:'AirPods Pro', price:249, desc:'Noise-canceling for when you want to ignore your other problems.', max:9999 },
+    { id:'ps5', emoji:'\uD83C\uDFAE', name:'PlayStation 5', price:499, desc:'You could buy one for every household in Los Angeles.', max:9999 },
+    { id:'iphone', emoji:'\uD83D\uDCF1', name:'iPhone 15 Pro Max', price:1199, desc:'You could give one to every person in the DFW metro area.', max:9999 },
+    { id:'bike', emoji:'\uD83D\uDEB2', name:'High-End Road Bike', price:5000, desc:'Carbon fiber. The preferred hobby of people with too much money.', max:9999 },
+    { id:'rolex', emoji:'\u231A', name:'Rolex Submariner', price:10000, desc:'A watch that costs more than most people earn in 4 months.', max:9999 },
+    { id:'car', emoji:'\uD83D\uDE97', name:'Tesla Model 3', price:40000, desc:'Electric, efficient, and a flex at the charging station.', max:9999 },
+    { id:'ferrari', emoji:'\uD83C\uDFCE\uFE0F', name:'Ferrari 488', price:300000, desc:'Goes 0-60 in 3 seconds. Your accountant goes 0-panic instantly.', max:9999 },
+    { id:'house', emoji:'\uD83C\uDFE0', name:'Average American Home', price:430000, desc:'You could house every person in Wyoming. Twice.', max:9999 },
+    { id:'jet', emoji:'\u2708\uFE0F', name:'Private Jet (G650)', price:75000000, desc:'Range: 7,500 nautical miles. Staff required: 2 pilots, 1 soul.', max:50 },
+    { id:'yacht', emoji:'\uD83D\uDEF3\uFE0F', name:'Superyacht (85m)', price:100000000, desc:'Comes with a helicopter pad and an identity crisis.', max:50 },
+    { id:'island', emoji:'\uD83C\uDFDD\uFE0F', name:'Private Island', price:15000000, desc:'Your own sovereign territory (not really, but it feels like it).', max:20 },
+    { id:'skyscraper', emoji:'\uD83C\uDFD9\uFE0F', name:'Manhattan Skyscraper', price:2000000000, desc:'400,000 sq ft of air rights and existential responsibility.', max:10 },
+    { id:'hospital', emoji:'\uD83C\uDFE5', name:'Build a Hospital', price:500000000, desc:'One full-service hospital. The gift that keeps on giving.', max:20 },
+    { id:'rocket', emoji:'\uD83D\uDE80', name:'Rocket Launch', price:67000000, desc:'A SpaceX Falcon 9 launch. Destination: anywhere but here.', max:10 },
+    { id:'nba', emoji:'\uD83C\uDFC0', name:'Buy an NBA Team', price:4000000000, desc:'Average franchise value. You get the drama for free.', max:5 },
+  ];
+
+  function fmt(n) {
+    if (n >= 1e9) return '$' + (Math.round(n / 1e8) / 10).toLocaleString() + 'B';
+    if (n >= 1e6) return '$' + (Math.round(n / 1e5) / 10).toLocaleString() + 'M';
+    if (n >= 1e3) return '$' + Math.round(n / 1e3).toLocaleString() + 'K';
+    return '$' + n.toLocaleString();
+  }
+
+  function fmtFull(n) {
+    return '$' + n.toLocaleString('en-US');
+  }
+
+  function updateBudget() {
+    var pct = remaining / TOTAL * 100;
+    var el = document.getElementById('budget-display');
+    var fill = document.getElementById('budget-fill');
+    el.textContent = fmtFull(remaining);
+    fill.style.width = pct + '%';
+    if (pct < 10) {
+      el.className = 'budget-amount broke';
+      fill.className = 'budget-fill broke';
+    } else if (pct < 35) {
+      el.className = 'budget-amount low';
+      fill.className = 'budget-fill low';
+    } else {
+      el.className = 'budget-amount';
+      fill.className = 'budget-fill';
+    }
+    document.getElementById('spent-display').textContent = fmtFull(TOTAL - remaining);
+
+    if (remaining <= 0) {
+      document.getElementById('broke-banner').classList.add('visible');
+    }
+    updateButtons();
+  }
+
+  function updateButtons() {
+    ITEMS.forEach(function(item) {
+      var btn = document.getElementById('btn-' + item.id);
+      var count = purchases[item.id] || 0;
+      if (btn) {
+        btn.disabled = (remaining < item.price || count >= item.max);
+      }
+      var counter = document.getElementById('count-' + item.id);
+      if (counter) {
+        counter.textContent = count > 0 ? 'x' + count.toLocaleString() : '';
+      }
+      var card = document.getElementById('card-' + item.id);
+      if (card) {
+        if (count >= item.max) { card.classList.add('maxed'); }
+        else { card.classList.remove('maxed'); }
+      }
+    });
+  }
+
+  function buy(item) {
+    if (remaining < item.price) return;
+    var count = purchases[item.id] || 0;
+    if (count >= item.max) return;
+    remaining -= item.price;
+    purchases[item.id] = count + 1;
+    updateBudget();
+    updateReceipt(item);
+  }
+
+  function updateReceipt(item) {
+    document.getElementById('receipt').classList.add('visible');
+    var list = document.getElementById('receipt-items');
+    var count = purchases[item.id];
+    var existing = document.getElementById('ri-' + item.id);
+    if (existing) {
+      existing.querySelector('span').textContent = fmt(item.price * count) + ' (x' + count + ')';
+    } else {
+      var row = document.createElement('div');
+      row.className = 'receipt-item';
+      row.id = 'ri-' + item.id;
+      row.innerHTML = '<span style="color:var(--ink)">' + item.emoji + ' ' + item.name + '</span><span>' + fmt(item.price) + '</span>';
+      list.insertBefore(row, list.firstChild);
+    }
+    if (count > 1) {
+      var row2 = document.getElementById('ri-' + item.id);
+      if (row2) {
+        row2.querySelector('span:last-child').textContent = fmt(item.price * count) + ' (x' + count + ')';
+      }
+    }
+  }
+
+  function buildGrid() {
+    var grid = document.getElementById('shop-grid');
+    ITEMS.forEach(function(item) {
+      var card = document.createElement('div');
+      card.className = 'item-card';
+      card.id = 'card-' + item.id;
+      card.innerHTML =
+        '<div class="item-emoji">' + item.emoji + '</div>' +
+        '<div class="item-name">' + item.name + '</div>' +
+        '<div class="item-price">' + fmtFull(item.price) + '</div>' +
+        '<div class="item-desc">' + item.desc + '</div>' +
+        '<div class="item-count-row">' +
+          '<span class="item-counter" id="count-' + item.id + '"></span>' +
+          '<button class="buy-btn" id="btn-' + item.id + '">Buy</button>' +
+        '</div>';
+      grid.appendChild(card);
+      document.getElementById('btn-' + item.id).addEventListener('click', function() { buy(item); });
+    });
+  }
+
+  buildGrid();
+  updateBudget();
+})();
+</script>
+</body>
+</html>
